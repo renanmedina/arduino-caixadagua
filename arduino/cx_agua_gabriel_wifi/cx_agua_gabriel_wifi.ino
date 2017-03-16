@@ -1,12 +1,14 @@
 #include <Wire.h>
 #include <WiFi.h>
 #include <LiquidCrystal_I2C.h>
-//#include <Ethernet.h>
 #include <SD.h>
 
-File cfile;
-//EthernetServer server(80);                            // porta servidor
-
+/* -----------------------------------------------------------------------------------------
+| Structs 
+| NetworkConfig: (byte mac[6], byte dns_srv[4], byte ip[4], byte gateway[4], byte mask[4])
+| WifiManager: (String networkname, String networkpwd, int keyIndex)
+| ConfigManager: (int pumpStartLimit, int pumpStopLimit, NetworkConfig network) 
+ ------------------------------------------------------------------------------------------- */
 struct NetworkConfig {
   byte mac[6] = { 0x90, 0xA2, 0xDA, 0x00, 0x9B, 0x36 };
   byte dns_srv[4]  {8,8,8, 8};
@@ -28,11 +30,20 @@ struct ConfigManager {
   WifiConfig wifi;
 };
 
-LiquidCrystal_I2C lcd(0x3F,2,1,0,4,5,6,7,3, POSITIVE);
+/* ------------------------------------------------------------------------ 
+| Constantes em tempo de compilação 
+ -------------------------------------------------------------------------- */
+#define trig 2
+#define echo 3
+#define rele 4
 
+/* ------------------------------------------------------------------------ 
+| Global variables 
+ -------------------------------------------------------------------------- */
+File cfile;
+LiquidCrystal_I2C lcd(0x3F,2,1,0,4,5,6,7,3, POSITIVE);
 // define o tempo em milesegundos entre os frames
 int x = 300;
-
 // define os simbolos da bomda e agua
 byte bomba_e[8] = {B00001,B00010,B11100,B11100,B11100,B11100,B00010,B00001};
 byte bomba_d[8] = {B10000,B01000,B00111,B00111,B00111,B00111,B01000,B10000};
@@ -40,24 +51,19 @@ byte eixo_p1[8] = {B00000,B10000,B01000,B00100,B00010,B00001,B00000,B00000};
 byte agua_e1[8] = {B00000,B00000,B10000,B00000,B00000,B10000,B00000,B00000};
 byte agua_e2[8] = {B00000,B00000,B10100,B00000,B00000,B10100,B00000,B00000};
 byte agua_e3[8] = {B00000,B00000,B10101,B00000,B00000,B10101,B00000,B00000};
-
-#define trig 2
-#define echo 3
-#define rele 4
-
 int nivel, bomba_estado = 0;
-
 //int pump_on = 0;
 int disable = 0;
 int system_mode = 0;
 int old_mode = -1;
 boolean log_enviado = false;
-
-//EthernetClient client_log;
 char log_srv[] = "agua.silvamedina.com.br";
-
 ConfigManager confs;
 
+/* ------------------------------------------------------------------------ 
+| setup
+| @do: initializes arduino logic
+ -------------------------------------------------------------------------- */
 void setup() {
   // initialize Ethernet port
   pinMode(trig, OUTPUT);
@@ -106,6 +112,10 @@ void setup() {
   //server.begin();
 }
 
+/* ------------------------------------------------------------------------ 
+| loop
+| @do: controls components and logic each time it's called
+ -------------------------------------------------------------------------- */
 void loop() {
   digitalWrite(trig, HIGH);
   delayMicroseconds(10);
@@ -155,29 +165,6 @@ void loop() {
   
    // display webpage
   //serveHttpServer();
-}
-
-void startPump(boolean send_log){
-  if(bomba_estado)
-    return;
-
-  bomba_estado = 1;
-  digitalWrite(rele, HIGH);
-  lcd.setCursor(10,1);
-  pump_on(12,1);
-  if(send_log)
-    sendLog("Bomba%20ligada%20automaticamente");
-}
-
-void shutdownPump(){
-  if(!bomba_estado)
-    return;
-   
-  bomba_estado = 0;
-  digitalWrite(rele, LOW);
-  lcd.setCursor(10,1);
-  pump_off(12,1);
-  sendLog("Bomba%20desligada%20automaticamente");
 }
 
 /* funcao que envia o monitoramento para o servidor na internet
