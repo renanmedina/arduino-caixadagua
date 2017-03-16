@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, user-scalable=no"/>
+	  <meta name="charset" content="UTF-8"/>
+    <script type='text/javascript' src='js/fusioncharts.min.js'></script>
+    <script type='text/javascript' src='js/datejs.min.js'></script>
+    <script type='text/javascript' src='js/fusioncharts.widgets.min.js'></script>
+    <script type='text/javascript' src='js/fusioncharts.theme.fint.min.js'></script>
+    <script type='text/javascript' src='js/jquery-3.1.1.min.js'></script>
+    <script type='text/javascript' src='js/fusioncharts-jquery-plugin.min.js'></script>
+    <script type='text/javascript' src='js/datatables.min.js'></script>
+    <script type='text/javascript' src='js/responsive.bootstrap.min.js'></script>
+    <script type='text/javascript' src='js/dataTables.bootstrap.min.js'></script>
+    <script type='text/javascript' src='js/monitor.min.js'></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <link rel='stylesheet' href='css/font-awesome.min.css'>
+    <link rel='stylesheet' href='css/dataTables.bootstrap.min.css'>
+    <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css' integrity='sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u' crossorigin='anonymous'>
+    <link rel='stylesheet' href='css/style.min.css'>
+    <title>Monitor de caixa d'agua</title>
+   </head>
+  <body>
+    <header class='header'>
+      <h4 style='padding-left:8px'>
+        <!--Monitor de caixa d'agua -->
+        Minha caixa d'agua
+        <div class='right-side'>
+          <span class="system-status alert alert-info" id="sys-mode"><i class="fa fa-refresh fa-spin"></i> carregando ... </span>
+        </div>
+      </h4>
+      <h5 class="subtitle-header">
+        Bem-vindo, Gabriel Motta
+        <small class="last-update">
+          <b id='runtime'></b>
+        </small>
+      </h5>
+    </header>
+    <main class='main-content'>
+      <ul class="nav nav-tabs" id="tabs">
+        <li role="presentation" class="active"><a href="#" tab-id="monitoring"><i class="fa fa-line-chart"></i> Monitoramento</a></li>
+        <li role="presentation"><a href="#" tab-id="logs"><i class="fa fa-clock-o"></i> Hist�rico</a></li>
+        <li role="presentation"><a href="#" tab-id="configs"><i class="fa fa-cogs"></i> Configs</a></li>
+      </ul>
+      <div class='container'>
+        <div class='tab-content visible' id='monitoring'>
+           <div class="row">
+            <div class='col col-md-6 col-xs-12 col-sm-12 gauge-area'>
+              <h3 class="title-area">Nivel da caixa</h3>
+              <div id='gwater' class='text-center'><br><br><div class='alert alert-info'><i class="fa fa-refresh fa-spin"></i> carregando nivel, aguarde ... </div><br><br></div>
+            </div>
+            <div class='col col-md-6 col-xs-12 col-sm-12 gauge-area'>
+              <h3 class="title-area">Estado da bomba</h3>
+              <div id='gpump' class='text-center'><br><br><div class='alert alert-info'><i class="fa fa-refresh fa-spin"></i> carregando estado, aguarde ... </div><br><br></div>
+            </div>
+          </div>
+        </div>
+        <div class='tab-content' id='logs'>
+          <div class="row">
+            <div class='col col-md-12 col-xs-12 col-sm-12'>
+              <h3 class="title-area">
+                Acionamentos 
+                <div class="title-actions">
+                  <a href="#" title="Recarregar" onClick="SystemMonitor.refreshLogsTable();"><i class="fa fa-refresh"></i></a>
+                  <a href="#" title="Limpar logs" onClick="SystemMonitor.clearLogs();"><i class="fa fa-close"></i></a>
+                </div>
+              </h3>
+              <table class="table table-striped" id="logs-table" width="100%">
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Motivo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td colspan='3'>
+                      <div class="alert alert-danger text-center" role="alert">Nenhum log encontrado</div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              
+            </div>
+          </div>
+        </div>
+        <div class='tab-content' id='configs'>
+          <div class="row">
+            <div class='col col-md-12 col-xs-12 col-sm-12'>
+              <h3 class="title-area">Configura��es</h3>
+              <form id="settings-form" onsubmit="return false;">
+                <div class="form-group">
+                  <label for="exampleInputEmail1">Endere�o do servidor de dados</label>
+                  <input type="text" class="form-control" name="datasource" id="config-datasource" placeholder="http://caixadagua.meuservidor.com.br">
+                </div>
+                <div class="form-group">
+                  <label for="exampleInputPassword1">Tempo de atualiza��o do monitoramento</label><br>
+                  <input type="number" style="width:50px;display:inline" name='updateInterval' id="config-interval" class="form-control text-center" placeholder="50" maxlength="5">&nbsp;segundos
+                </div>
+                <div class="form-group">
+                  <label for="exampleInputPassword1">Formato de data</label><br>
+                  <select class="form-control" name="dateFormat" id="config-dateformat">
+                    <option value="d/m/Y H:i:s">Portugu�s (Brasil)</option>
+                    <option value="Y-m-d H:i:s">Americano (Estados Unidos)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="exampleInputPassword1">Limite de logs</label><br>
+                  <input type="number" style="width:50px;display:inline" name='logLimit' id="config-loglimit" class="form-control text-center" placeholder="200" maxlength="5">&nbsp;registros
+                </div>
+                <h3 class="title-area">Acionamento da bomba</h3>
+                <div class="row">
+                  <div class="col col-xs-6 col-sm-6">
+                    <div class="form-group">
+                      <label for="exampleInputPassword1">Ativar em</label><br>
+                      <input type="number" style="width:70px;display:inline" name='pumpStartValue' id="config-pumpstartvalue" class="form-control text-center" placeholder="10%" maxlength="3">&nbsp;%
+                    </div>
+                  </div>
+                  <div class="col col-xs-6 col-sm-6">
+                    <div class="form-group">
+                      <label for="exampleInputPassword1">Desativar em</label><br>
+                      <input type="number" style="width:70px;display:inline" name='pumpStopValue' id="config-pumpstopvalue" class="form-control text-center" placeholder="95%" maxlength="3">&nbsp;%
+                    </div>
+                  </div>
+                </div>
+                <br><br>
+                <button type="button" class="btn btn-success btn-block" data-dismiss="modal" onclick="SystemMonitor.saveSettings();">Aplicar altera��es</button>
+                <br>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

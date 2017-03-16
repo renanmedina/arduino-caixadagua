@@ -1,0 +1,8 @@
+{
+    "datasource": "http:\/\/angels.ddns.net:3388",
+    "updateInterval": "15",
+    "dateFormat": "d\/m\/Y H:i:s",
+    "logLimit": "200",
+    "pumpStartValue": "10",
+    "pumpStopValue": "95"
+}
