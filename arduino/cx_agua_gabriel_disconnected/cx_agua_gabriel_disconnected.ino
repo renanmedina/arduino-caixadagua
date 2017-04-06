@@ -34,6 +34,7 @@ int old_mode = -1;
 signed int nivel_media[3] = {-500, -500, -500};
 int media_count = 0;
 ConfigManager confs;
+int nivel_control = -200;
 
 /* ------------------------------------------------------------------------ 
 | setup
@@ -82,28 +83,25 @@ void loop() {
   digitalWrite(trig, LOW);
   int tempo = pulseIn(echo, HIGH);
   int distancia = (tempo/58);
-  nivel = map(distancia,70,15,0,100);
-  
-  nivel_media[media_count] = nivel;
-  
-  if(media_count == 2){
-    nivel = (nivel_media[0]+nivel_media[1]+nivel_media[2])/3;
-    media_count = 0;
+  nivel = map(distancia, 57, 10, 0,100);
+
+  if(nivel_control < -100)
+    nivel_control = nivel;
+  else if(nivel - nivel_control > 20){
+    nivel_control = nivel;
+    return;
+  }
     
-    nivel_media[0] = -500;
-    nivel_media[1] = -500;
-    nivel_media[2] = -500;
+//  if (nivel >= 100)
+//   nivel = 100;
+//  else if (nivel <=0) 
+//   nivel = 0;
      
-    if (nivel >= 100)
-     nivel = 100;
-    else if (nivel <=0) 
-     nivel = 0;
-     
-    lcd.setCursor(0,1);  
-    lcd.print(nivel);
-    lcd.print("%  ");
-    
-    if (digitalRead(modo1) == HIGH && digitalRead(modo2) == LOW ){
+  lcd.setCursor(0,1);  
+  lcd.print(nivel);
+  lcd.print("%  ");
+
+  if (digitalRead(modo1) == HIGH && digitalRead(modo2) == LOW ){
       system_mode = 1;
       lcd.setCursor(7,1);
       lcd.print("A");
@@ -135,9 +133,6 @@ void loop() {
       pump_on(12,1);
     else if (system_mode == 1  && bomba_estado == 0) 
      pump_off(12,1);
-  }
-  else
-   media_count++;
 // display webpage
 // serveHttpServer();
 }
