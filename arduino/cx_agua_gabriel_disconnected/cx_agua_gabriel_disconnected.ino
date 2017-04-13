@@ -1,3 +1,4 @@
+#include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <SD.h>
 /* -----------------------------------------------------------------------------------------
@@ -35,6 +36,7 @@ signed int nivel_media[3] = {-500, -500, -500};
 int media_count = 0;
 ConfigManager confs;
 int nivel_control = -200;
+int clock_medicao = 0;
 
 /* ------------------------------------------------------------------------ 
 | setup
@@ -82,33 +84,42 @@ void loop() {
   delay(10);
   digitalWrite(trig, LOW);
   int tempo = pulseIn(echo, HIGH);
-  int distancia = (tempo/58);
-  nivel = map(distancia, 57, 10, 0,100);
+  int distancia = tempo/58;
 
+//  lcd.setCursor(0,1);  
+//  lcd.print(distancia);
+//  lcd.print("cm");
+//  return;
+  
+  nivel = map(distancia+3, 51, 6, 0, 100);
+
+  clock_medicao++;
+  
   if(nivel_control < -100)
     nivel_control = nivel;
-  else if(nivel - nivel_control > 20){
+  //else if(nivel%nivel_control >= 5)
+  else if(clock_medicao >= 300 && ((bomba_estado && nivel > nivel_control) || (!bomba_estado && nivel < nivel_control)) && nivel%nivel_control >= 2){
     nivel_control = nivel;
-    return;
+    clock_medicao = 0;
   }
-    
+  
 //  if (nivel >= 100)
 //   nivel = 100;
 //  else if (nivel <=0) 
 //   nivel = 0;
      
   lcd.setCursor(0,1);  
-  lcd.print(nivel);
+  lcd.print(nivel_control);
   lcd.print("%  ");
-
+  
   if (digitalRead(modo1) == HIGH && digitalRead(modo2) == LOW ){
       system_mode = 1;
       lcd.setCursor(7,1);
       lcd.print("A");
-      if (nivel <= confs.pumpStartLimit){
+      if (nivel_control <= confs.pumpStartLimit){
          digitalWrite(rele, HIGH);
          bomba_estado = 1;
-      } else if (nivel >= confs.pumpStopLimit){
+      } else if (nivel_control >= confs.pumpStopLimit){
         bomba_estado = 0;
         digitalWrite(rele, LOW);
       }
@@ -133,8 +144,6 @@ void loop() {
       pump_on(12,1);
     else if (system_mode == 1  && bomba_estado == 0) 
      pump_off(12,1);
-// display webpage
-// serveHttpServer();
 }
 
 boolean loadConfigs(){
