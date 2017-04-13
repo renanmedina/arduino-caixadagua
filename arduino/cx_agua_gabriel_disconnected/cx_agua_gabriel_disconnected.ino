@@ -91,7 +91,7 @@ void loop() {
 //  lcd.print("cm");
 //  return;
   
-  nivel = map(distancia+3, 51, 6, 0, 100);
+  nivel = map(distancia, 51, 4, 0, 100);
 
   clock_medicao++;
   
