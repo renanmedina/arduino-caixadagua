@@ -98,7 +98,7 @@ void loop() {
   if(nivel_control < -100)
     nivel_control = nivel;
   //else if(nivel%nivel_control >= 5)
-  else if(clock_medicao >= 300 && ((bomba_estado && nivel > nivel_control) || (!bomba_estado && nivel < nivel_control)) && nivel%nivel_control >= 2){
+  else if(clock_medicao >= 300 && ((bomba_estado && nivel > nivel_control) || (!bomba_estado && nivel < nivel_control)) && abs(nivel-nivel_control) >= 2){
     nivel_control = nivel;
     clock_medicao = 0;
   }
